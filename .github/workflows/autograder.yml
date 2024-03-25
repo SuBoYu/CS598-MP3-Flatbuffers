@@ -1,0 +1,23 @@
+name: CS598 AutoGrader
+
+on: push
+
+jobs:
+  tpch:
+    name: OLA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8"]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements.txt
+    - name: Test with pytest
+      run: |
+        pytest -vv test_fb*
