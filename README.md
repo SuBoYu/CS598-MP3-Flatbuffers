@@ -61,7 +61,7 @@ Your tasks are as follows:
 - Modifying a column in Flatbuffer-serialized dataframe in-place via `map` (30%)
 - Integrating your Flatbuffer functions with shared memory (20%)
 
-You can find the skeleton code for the Flatbuffer definition in `dataframe.fbs`, Flatbuffers operations in `fb_dataframe.py`, and shared memory in `fb_shared_memory.py`. The [Flatbffers tutorial page](https://flatbuffers.dev/flatbuffers_guide_tutorial.html) and the [shared memory](https://docs.python.org/3/library/multiprocessing.shared_memory.html) pages contain many helpful examples for completing your tasks. The detailed requirements for these tasks are given below.
+You can find the skeleton code for the Flatbuffer definition in `dataframe.fbs`, Flatbuffers operations in `fb_dataframe.py`, and shared memory in `fb_shared_memory.py`. The [Flatbffers tutorial page](https://flatbuffers.dev/flatbuffers_guide_tutorial.html) and the [shared memory](https://docs.python.org/3/library/multiprocessing.shared_memory.html) pages contain many helpful examples for completing your tasks. The detailed requirements for these tasks are given below. **It is important that you understand the operations performed in the Flatbuffers tutorial - you will need to use them for the tasks in the project.**
 
 ## Serializing Dataframes into Flatbuffers (30%)
 
@@ -78,12 +78,12 @@ Once written and compiled with `flatbuffers/flatc --python dataframe.fbs`, you w
 - `object` columns should be stored as `string` values using `CreateString`.
 
 ## Performing the HEAD Operation on Flatbuffer-Serialized Dataframes (10%)
-You will write the `fb_dataframe_head` function in `fb_dataframe.py` to directly read the first `n` rows from a Flatbuffer-serialized Dataframe without deserialization. The results should be returned as a Pandas Dataframe.
+You will write the `fb_dataframe_head` function in `fb_dataframe.py` to directly read the first `n` rows from a Flatbuffer-serialized Dataframe. The results should be returned as a Pandas Dataframe.
 
 You will be graded on the efficiency of the implementation: performing `head` on a Flatbuffer-serialized Dataframe should be faster than deserializing with `Pickle`, then calling `head` (see `test_fb_dataframe_head` in `test_fb_dataframe.py` for the test case).
 
 ## Performing Grouped Aggregation on Flatbuffer-serialized Dataframes (10%)
-You will write the `fb_dataframe_group_by_sum` function in `fb_dataframe.py` to compute grouped aggregates for `sum_col` grouping by `group_col` on a Flatbuffer-serialized Dataframe without deserialization. The results should be returned as a Pandas Dataframe.
+You will write the `fb_dataframe_group_by_sum` function in `fb_dataframe.py` to compute grouped aggregates for `sum_col` grouping by `group_col` on a Flatbuffer-serialized Dataframe. The results should be returned as a Pandas Dataframe.
 
 You will be graded on the efficiency of the implementation: performing `head` on a Flatbuffer-serialized Dataframe should be faster than deserializing with `Pickle`, then calling `agg` (see `test_fb_dataframe_group_by_sum` in `test_fb_dataframe.py` for the test case).
 
@@ -96,7 +96,7 @@ You will find this helpful message in the Flatbuffers tutorial page regarding mu
 
 `<API for mutating FlatBuffers is not yet available in Python.>`
 
-This means you will have to do this task without a dedicated API via some old-fashioned bit manipulation (it's worth 30% for a reason). Note that whenever you create a Flatbuffer object (e.g., `builder.CreateString`), its offset relative to the end of the Flatbuffer is returned. If you know the offset (i.e., where the object is located in the bytestring), you can directly manipulate it without using the Flatbuffer API. Running a brute-force scan may be helpful to know how items are serialized in the Flatbuffer:
+This means you will have to do this task without a dedicated API via some old-fashioned byte manipulation (it's worth 30% for a reason). Note that whenever you create a Flatbuffer object (e.g., `builder.CreateString`), its offset relative to the end of the Flatbuffer is returned. If you know the offset (i.e., where the object is located in the bytestring), you can directly manipulate it without using the Flatbuffer API. Running a brute-force scan may be helpful to know how items are serialized in the Flatbuffer:
 ```
 for i in range(a, b):
   try:
@@ -157,5 +157,7 @@ for i in offsets:
     builder.PrependSOffsetTRelative(i)
 data = builder.EndVector()
 ```
-- Q3: Is it expected that in `guest_nb`, performing Groupby with my Flatbuffer implementation is slower than unserializing with Dill, then performing Groupby?
-- A3: Yes. In general, serializing and deserializing Dataframes with Flatbuffers is much slower than doing so with Pickle. That is why the benefits of Flatbuffers only show if the amount of data you are reading between using Flatbuffers and Pickle are vastly different (e.g., 5 rows vs. 450,000 rows for `head`, respectively). The 2 out of 15 columns you are reading with Flatbuffers is already a sizable enough portion of the Dataframe to make it slower than Unpickling.
+- Q3: Why is my integer decoding function returning weird numbers for the `map` question?
+- A4: There are 2 ways to encode integers - little and big endian. Try to figure out which one Flatbuffer uses.
+- Q4: Is it expected that in `guest_nb`, performing Groupby with my Flatbuffer implementation is slower than unserializing with Dill, then performing Groupby?
+- A4: That is very possible. In general, serializing and deserializing Dataframes with Flatbuffers is much slower than doing so with Pickle. That is why the benefits of Flatbuffers only show if the amount of data you are reading between using Flatbuffers and Pickle are vastly different (e.g., 5 rows vs. 450,000 rows for `head`, respectively). The 2 out of 15 columns you are reading with Flatbuffers is already a sizable enough portion of the Dataframe to make it slower than Unpickling.
