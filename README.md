@@ -8,7 +8,19 @@ In this project, you will be working with Google's [Flatbuffers](https://github.
 
 ## Getting Started
 As with the previous projects, you will need to [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repository to your own Github account - please do not commit directly to this repository!
+
+This repository contains submodules. Therefore, you will need to run `git clone` with the `--recurse-submodules` option:
+```
+git clone --recurse-submodules https://github.com/illinoisdata/CS598-MP3-Flatbuffers
+```
 You will then need to make your cloned repository **private**.
+
+**Note**: if you forget to use the `--recurse-submodules` flag when cloning, you can still initialize the Flatbuffer submodule with a separate command as follows:
+```
+git clone https://github.com/illinoisdata/CS598-MP3-Flatbuffers   # Oops, I forgot to --recurse-submodules
+cd CS598-MP3-Flatbuffers
+git submodule update --init --recursive
+```
 
 ### Building the Flatbuffers Binary
 
@@ -18,7 +30,7 @@ The next step is build the Flatbuffers binary (included as a submodule in this r
 cd flatbuffers
 
 # Depending on your OS, run one of these:
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release        # Run this if you are on Linux or MacOS
 cmake -G "Visual Studio 10" -DCMAKE_BUILD_TYPE=Release
 cmake -G "Xcode" -DCMAKE_BUILD_TYPE=Release
 
