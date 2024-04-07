@@ -73,7 +73,7 @@ Your tasks are as follows:
 - Modifying a column in Flatbuffer-serialized dataframe in-place via `map` (30%)
 - Integrating your Flatbuffer functions with shared memory (20%)
 
-You can find the skeleton code for the Flatbuffer definition in `dataframe.fbs`, Flatbuffers operations in `fb_dataframe.py`, and shared memory in `fb_shared_memory.py`. The [Flatbffers tutorial page](https://flatbuffers.dev/flatbuffers_guide_tutorial.html) and the [shared memory](https://docs.python.org/3/library/multiprocessing.shared_memory.html) pages contain many helpful examples for completing your tasks. The detailed requirements for these tasks are given below. **It is important that you understand the operations performed in the Flatbuffers tutorial - you will need to use them for the tasks in the project.**
+You will be filling out the Flatbuffer definition in `dataframe.fbs`, Flatbuffers operations in `fb_dataframe.py`, and shared memory-related operations in `fb_shared_memory.py`. The [Flatbffers tutorial page](https://flatbuffers.dev/flatbuffers_guide_tutorial.html) and the [shared memory](https://docs.python.org/3/library/multiprocessing.shared_memory.html) pages contain many helpful examples for completing your tasks. The detailed requirements for these tasks are given below. **It is important that you understand the operations performed in the Flatbuffers tutorial - you will need to use them for the tasks in the project.**
 
 ## Serializing Dataframes into Flatbuffers (30%)
 
