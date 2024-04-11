@@ -48,7 +48,9 @@ cd ..
 flatbuffers/flatc --python monster.fbs
 ```
 
-You can find the resulting Python modules under `MyGame/Sample`; the path of the generated module is determined by the namespace declaration (`namespace MyGame.Sample;`) at the top of `monster.fbs`. The [Flatbffers tutorial page](https://flatbuffers.dev/flatbuffers_guide_tutorial.html) provides an in-depth explanation of how to write to and access the fields.
+You can find the resulting Python modules under `MyGame/Sample`; the path of the generated module is determined by the namespace declaration (`namespace MyGame.Sample;`) at the top of `monster.fbs`. The [Flatbffers tutorial page](https://flatbuffers.dev/flatbuffers_guide_tutorial.html) provides an in-depth explanation of how to write to and access the fields; select 'Python' for the Python-specific API.
+
+<img width="421" alt="image" src="https://github.com/illinoisdata/CS598-MP3-Flatbuffers/assets/31910858/cf6bb95f-326c-4587-a5d6-72d10fd2aba2">
 
 ## Project Motivation
 
