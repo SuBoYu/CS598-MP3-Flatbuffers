@@ -112,7 +112,7 @@ This means you will have to do this task without a dedicated API via some old-fa
 ```
 for i in range(a, b):
   try:
-    print(a, int.decode(buf[a:a+8], 'little'))
+    print(a, int.from_bytes(buf[a:a+8], 'little'))
   except:
     pass
 ```
