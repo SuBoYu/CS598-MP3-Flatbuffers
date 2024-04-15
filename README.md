@@ -87,7 +87,7 @@ Your Flatbuffer definition for Dataframes should support the `int64`, `float`, a
 ```
 Where `metadata` can contain anything you see fit (e.g., column names, data types), and `val1, val2` are actual values in the Dataframe columns. 
 
-Once written and compiled with `flatbuffers/flatc --python dataframe.fbs`, you will write the `to_flatbuffer` function in `fb_dataframe.py` to serialize a Pandas Dataframe into bytes according to your Flatbuffer definition:
+Once written and compiled with `flatbuffers/flatc --python dataframe.fbs`, you will write the `to_flatbuffer` function in `fb_dataframe.py` to serialize a Pandas Dataframe into a bytearray according to your Flatbuffer definition:
 - `int` and `float` columns should be stored as `int` and `float64` values in the flatbuffer using `AddIntdata` and `AddFloatdata` respectively - **don't convert them to strings!** This is both less efficient and loses precision for floats.
 - `object` columns should be stored as `string` values using `CreateString`.
 
