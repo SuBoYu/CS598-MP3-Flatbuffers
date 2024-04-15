@@ -6,9 +6,9 @@ import types
 
 # Your Flatbuffer imports here (i.e. the files generated from running ./flatc with your Flatbuffer definition)...
 
-def to_flatbuffer(df: pd.DataFrame) -> bytes:
+def to_flatbuffer(df: pd.DataFrame) -> bytearray:
     """
-        Converts a DataFrame to a flatbuffer. Returns the bytes of the flatbuffer.
+        Converts a DataFrame to a flatbuffer. Returns the bytearray of the flatbuffer.
 
         The flatbuffer should follow a columnar format as follows:
         +-------------+----------------+-------+-------+-----+----------------+-------+-------+-----+
@@ -22,7 +22,7 @@ def to_flatbuffer(df: pd.DataFrame) -> bytes:
 
         @param df: the dataframe.
     """
-    return b''  # REPLACE THIS WITH YOUR CODE...
+    return bytearray()  # REPLACE THIS WITH YOUR CODE...
 
 
 def fb_dataframe_head(fb_bytes: bytes, rows: int = 5) -> pd.DataFrame:
