@@ -144,7 +144,70 @@ def fb_dataframe_group_by_sum(fb_bytes: bytes, grouping_col_name: str, sum_col_n
         @param grouping_col_name: column to group by.
         @param sum_col_name: column to sum.
     """
-    return pd.DataFrame()  # REPLACE THIS WITH YOUR CODE...
+    fb_df = DataFrame.DataFrame.GetRootAs(fb_bytes,  0)
+    cols_len = fb_df.ColumnsLength()
+    group_col_data = list()
+    sum_col_data = list()
+    # print("\n")
+    for i in range(cols_len):
+        col = fb_df.Columns(i)
+        # print(col)
+        # print(col.Data().Pos)
+        colmetadata = col.Colmetadata()
+        col_name = colmetadata.Name().decode("utf-8")
+        # print(col_name)
+        col_datatype = colmetadata.Type()
+        # print(col_datatype)
+        if col_name == grouping_col_name:
+            if col_datatype == DataType.DataType().INT64:
+                int_data = IntData.IntData()
+                int_data.Init(col.Data().Bytes, col.Data().Pos)
+                # print(int_data.DataLength())
+                for j in range(int_data.DataLength()):
+                    group_col_data.append(int_data.Data(j))
+            elif col_datatype == DataType.DataType().FLOAT64:
+                float_data = FloatData.FloatData()
+                float_data.Init(col.Data().Bytes, col.Data().Pos)
+                # print(float_data.DataLength())
+                for j in range(float_data.DataLength()):
+                    group_col_data.append(float_data.Data(j))
+            elif col_datatype == DataType.DataType.STRING:
+                string_data = StringData.StringData()
+                string_data.Init(col.Data().Bytes, col.Data().Pos)
+                # print(string_data.DataLength())
+                for j in range(string_data.DataLength()):
+                    group_col_data.append(string_data.Data(j).decode("utf-8"))
+        elif col_name == sum_col_name:
+            if col_datatype == DataType.DataType().INT64:
+                int_data = IntData.IntData()
+                int_data.Init(col.Data().Bytes, col.Data().Pos)
+                # print(int_data.DataLength())
+                for j in range(int_data.DataLength()):
+                    sum_col_data.append(int_data.Data(j))
+            elif col_datatype == DataType.DataType().FLOAT64:
+                float_data = FloatData.FloatData()
+                float_data.Init(col.Data().Bytes, col.Data().Pos)
+                # print(float_data.DataLength())
+                for j in range(float_data.DataLength()):
+                    sum_col_data.append(float_data.Data(j))
+            elif col_datatype == DataType.DataType.STRING:
+                string_data = StringData.StringData()
+                string_data.Init(col.Data().Bytes, col.Data().Pos)
+                # print(string_data.DataLength())
+                for j in range(string_data.DataLength()):
+                    sum_col_data.append(string_data.Data(j).decode("utf-8"))
+        if len(sum_col_data) != 0 and len(group_col_data) != 0:
+            break
+    df = pd.DataFrame(
+        {
+            grouping_col_name: group_col_data,
+            sum_col_name: sum_col_data
+        }
+    )
+    df = df.groupby(grouping_col_name).agg({sum_col_name: 'sum'})
+    # print(df)
+
+    return df  # REPLACE THIS WITH YOUR CODE...
 
 
 def fb_dataframe_map_numeric_column(fb_buf: memoryview, col_name: str, map_func: types.FunctionType) -> None:
