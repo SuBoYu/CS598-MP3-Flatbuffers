@@ -122,7 +122,46 @@ def fb_dataframe_head(fb_bytes: bytes, rows: int = 5) -> pd.DataFrame:
         @param fb_bytes: bytes of the Flatbuffer Dataframe.
         @param rows: number of rows to return.
     """
-    return pd.DataFrame()  # REPLACE THIS WITH YOUR CODE...
+
+    fb_df = DataFrame.DataFrame.GetRootAs(fb_bytes)
+    cols_len = fb_df.ColumnsLength()
+    column_data = dict()
+
+    for i in range(cols_len):
+        col = fb_df.Columns(i)
+        # print(col)
+        print(col.Data().Pos)
+        colmetadata = col.Colmetadata()
+        col_name = colmetadata.Name().decode("utf-8")
+        print(col_name)
+        col_datatype = colmetadata.Type()
+        data_list = list()
+        print(col_datatype)
+        if col_datatype == DataType.DataType().INT64:
+            int_data = IntData.IntData()
+            int_data.Init(col.Data().Bytes, col.Data().Pos)
+            print(int_data.DataLength())
+            for j in range(min(rows, int_data.DataLength())):
+                data_list.append(int_data.Data(j))
+        elif col_datatype == DataType.DataType().FLOAT64:
+            float_data = FloatData.FloatData()
+            float_data.Init(col.Data().Bytes, col.Data().Pos)
+            print(float_data.DataLength())
+            for j in range(min(rows, float_data.DataLength())):
+                data_list.append(float_data.Data(j))
+        elif col_datatype == DataType.DataType.STRING:
+            string_data = StringData.StringData()
+            string_data.Init(col.Data().Bytes, col.Data().Pos)
+            print(string_data.DataLength())
+            for j in range(min(rows, string_data.DataLength())):
+                data_list.append(string_data.Data(j).decode("utf-8"))
+        column_data[col_name] = data_list
+
+    df = pd.DataFrame(column_data)
+
+    print(df)
+
+    return df
 
 
 def fb_dataframe_group_by_sum(fb_bytes: bytes, grouping_col_name: str, sum_col_name: str) -> pd.DataFrame:
