@@ -15,13 +15,17 @@ class FbSharedMemory:
     def __init__(self):
         try:
             self.df_shared_memory = shared_memory.SharedMemory(name = "CS598")
+            self.hashmap_shared_memory = shared_memory.SharedMemory(name = "CS598_hash")
         except FileNotFoundError:
             # Shared memory is not created yet, create it with size 200M.
             self.df_shared_memory = shared_memory.SharedMemory(name = "CS598", create=True, size=200000000)
+            self.hashmap_shared_memory = shared_memory.SharedMemory(name="CS598_hash", create=True, size=20000000)
 
             # Add more initialization steps if needed here...
 
         # Add other class members you need here...
+        self.offset = 0
+        self.name_fbdf_hashmap = dict()
 
     def add_dataframe(self, name: str, df: pd.DataFrame) -> None:
         """
@@ -31,6 +35,12 @@ class FbSharedMemory:
             @param df: the dataframe to add to shared memory.
         """
         # YOUR CODE HERE...
+        fb_df = to_flatbuffer(df)
+        self.df_shared_memory.buf[self.offset:self.offset+len(fb_df)] = bytes(fb_df)
+        self.name_fbdf_hashmap[name] = [self.offset, len(fb_df)]
+        self.offset += len(fb_df)
+        hashmap_bytestring = dill.dumps(self.name_fbdf_hashmap)
+        self.hashmap_shared_memory.buf[:len(hashmap_bytestring)] = hashmap_bytestring
 
 
     def _get_fb_buf(self, df_name: str) -> memoryview:
@@ -40,7 +50,11 @@ class FbSharedMemory:
 
             @param df_name: name of the Dataframe.
         """
-        return self.df_shared_memory.buf  # REPLACE THIS WITH YOUR CODE...
+        hashmap_bytes = self.hashmap_shared_memory.buf[:20000000]
+        self.name_fbdf_hashmap = dill.loads(hashmap_bytes)
+        offset, len_fb_df = self.name_fbdf_hashmap[df_name]
+
+        return self.df_shared_memory.buf[offset:offset+len_fb_df]  # REPLACE THIS WITH YOUR CODE...
 
 
     def dataframe_head(self, df_name: str, rows: int = 5) -> pd.DataFrame:
