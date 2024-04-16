@@ -24,9 +24,7 @@ def to_flatbuffer(df: pd.DataFrame) -> bytes:
         @param df: the dataframe.
     """
     builder = flatbuffers.Builder(1024)
-    int_col_list = list()
-    float_col_list = list()
-    str_col_list = list()
+    col_list = list()
 
     for c_name in reversed(df.columns):
         if df[c_name].dtype == "int64":
@@ -38,18 +36,6 @@ def to_flatbuffer(df: pd.DataFrame) -> bytes:
             IntData.Start(builder)
             IntData.AddData(builder, datas)
             c_data = IntData.End(builder)
-
-            c_name = builder.CreateString(c_name)
-
-            ColMetaData.Start(builder)
-            ColMetaData.AddName(builder, c_name)
-            ColMetaData.AddType(builder, datatype)
-            c_metadata = ColMetaData.End(builder)
-
-            Column.Start(builder)
-            Column.AddColmetadata(builder, c_metadata)
-            Column.AddData(builder, c_data)
-            int_col_list.append(Column.End(builder))
         elif df[c_name].dtype == "float64":
             datatype = DataType.DataType().FLOAT64
             FloatData.FloatDataStartDataVector(builder, len(df[c_name]))
@@ -59,18 +45,6 @@ def to_flatbuffer(df: pd.DataFrame) -> bytes:
             FloatData.Start(builder)
             FloatData.AddData(builder, datas)
             c_data = FloatData.End(builder)
-
-            c_name = builder.CreateString(c_name)
-
-            ColMetaData.Start(builder)
-            ColMetaData.AddName(builder, c_name)
-            ColMetaData.AddType(builder, datatype)
-            c_metadata = ColMetaData.End(builder)
-
-            Column.Start(builder)
-            Column.AddColmetadata(builder, c_metadata)
-            Column.AddData(builder, c_data)
-            float_col_list.append(Column.End(builder))
         else:
             datatype = DataType.DataType().STRING
             str_offsets = list()
@@ -84,23 +58,20 @@ def to_flatbuffer(df: pd.DataFrame) -> bytes:
             StringData.AddData(builder, datas)
             c_data = StringData.End(builder)
 
-            c_name = builder.CreateString(c_name)
+        c_name = builder.CreateString(c_name)
 
-            ColMetaData.Start(builder)
-            ColMetaData.AddName(builder, c_name)
-            ColMetaData.AddType(builder, datatype)
-            c_metadata = ColMetaData.End(builder)
+        ColMetaData.Start(builder)
+        ColMetaData.AddName(builder, c_name)
+        ColMetaData.AddType(builder, datatype)
+        c_metadata = ColMetaData.End(builder)
 
-            Column.Start(builder)
-            Column.AddColmetadata(builder, c_metadata)
-            Column.AddData(builder, c_data)
-            str_col_list.append(Column.End(builder))
-
-    col_list = int_col_list + float_col_list + str_col_list
+        Column.Start(builder)
+        Column.AddColmetadata(builder, c_metadata)
+        Column.AddData(builder, c_data)
+        col_list.append(Column.End(builder))
 
     DataFrame.DataFrameStartColumnsVector(builder, len(col_list))
     for col in col_list:
-        # print(col)
         builder.PrependUOffsetTRelative(col)
     columns = builder.EndVector(len(col_list))
 
@@ -123,43 +94,43 @@ def fb_dataframe_head(fb_bytes: bytes, rows: int = 5) -> pd.DataFrame:
         @param rows: number of rows to return.
     """
 
-    fb_df = DataFrame.DataFrame.GetRootAs(fb_bytes)
+    fb_df = DataFrame.DataFrame.GetRootAs(fb_bytes,  0)
     cols_len = fb_df.ColumnsLength()
     column_data = dict()
-
+    # print("\n")
     for i in range(cols_len):
         col = fb_df.Columns(i)
         # print(col)
-        print(col.Data().Pos)
+        # print(col.Data().Pos)
         colmetadata = col.Colmetadata()
         col_name = colmetadata.Name().decode("utf-8")
-        print(col_name)
+        # print(col_name)
         col_datatype = colmetadata.Type()
         data_list = list()
-        print(col_datatype)
+        # print(col_datatype)
         if col_datatype == DataType.DataType().INT64:
             int_data = IntData.IntData()
             int_data.Init(col.Data().Bytes, col.Data().Pos)
-            print(int_data.DataLength())
+            # print(int_data.DataLength())
             for j in range(min(rows, int_data.DataLength())):
                 data_list.append(int_data.Data(j))
         elif col_datatype == DataType.DataType().FLOAT64:
             float_data = FloatData.FloatData()
             float_data.Init(col.Data().Bytes, col.Data().Pos)
-            print(float_data.DataLength())
+            # print(float_data.DataLength())
             for j in range(min(rows, float_data.DataLength())):
                 data_list.append(float_data.Data(j))
         elif col_datatype == DataType.DataType.STRING:
             string_data = StringData.StringData()
             string_data.Init(col.Data().Bytes, col.Data().Pos)
-            print(string_data.DataLength())
+            # print(string_data.DataLength())
             for j in range(min(rows, string_data.DataLength())):
                 data_list.append(string_data.Data(j).decode("utf-8"))
         column_data[col_name] = data_list
 
     df = pd.DataFrame(column_data)
 
-    print(df)
+    # print(df)
 
     return df
 
