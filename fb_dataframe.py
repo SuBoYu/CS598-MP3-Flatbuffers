@@ -221,5 +221,48 @@ def fb_dataframe_map_numeric_column(fb_buf: memoryview, col_name: str, map_func:
         @param map_func: function to apply to elements in the numeric column.
     """
     # YOUR CODE HERE...
+    fb_df = DataFrame.DataFrame.GetRootAs(fb_buf,  0)
+    cols_len = fb_df.ColumnsLength()
+    for i in range(cols_len):
+        col = fb_df.Columns(i)
+        # print(col)
+        # print(col.Data().Pos)
+        colmetadata = col.Colmetadata()
+        column_name = colmetadata.Name().decode("utf-8")
+        # print(col_name)
+        col_datatype = colmetadata.Type()
+        # print(col_datatype)
+        if column_name == col_name:
+            if col_datatype == DataType.DataType().INT64:
+                # print(col_name)
+                # print("cd: Bytes: ", col.Data().Bytes)
+                # print("cd: Pos: ", col.Data().Pos)
+                int_data = IntData.IntData()
+                int_data.Init(col.Data().Bytes, col.Data().Pos)
+
+                offset = col.Data().Pos + 12
+                for i in range(int_data.DataLength()):
+                    # print(i, int.from_bytes(fb_buf[offset:offset + 8], 'little'))
+                    num = int.from_bytes(fb_buf[offset:offset + 8], 'little')
+                    new_num = map_func(num)
+                    fb_buf[offset:offset + 8] = new_num.to_bytes(8, 'little')
+                    offset += 8
+
+            elif col_datatype == DataType.DataType().FLOAT64:
+                # print(col_name)
+                # print("cd: Bytes: ", col.Data().Bytes)
+                # print("cd: Pos: ", col.Data().Pos)
+                float_data = FloatData.FloatData()
+                float_data.Init(col.Data().Bytes, col.Data().Pos)
+
+                offset = col.Data().Pos + 12
+                for i in range(float_data.DataLength()):
+                    import struct
+                    # print(i, struct.unpack('<d', fb_buf[offset:offset+8])[0])
+                    num = struct.unpack('<d', fb_buf[offset:offset+8])[0]
+                    new_num = map_func(num)
+                    fb_buf[offset:offset+8] = struct.pack('<d', new_num)
+                    offset += 8
+                break
     pass
     
