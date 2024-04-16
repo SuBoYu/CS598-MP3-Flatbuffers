@@ -3,6 +3,7 @@ import pandas as pd
 import struct
 import time
 import types
+from Dataframe import DataFrame, Column, ColMetaData, DataType, IntData, FloatData, StringData
 
 # Your Flatbuffer imports here (i.e. the files generated from running ./flatc with your Flatbuffer definition)...
 
@@ -22,8 +23,95 @@ def to_flatbuffer(df: pd.DataFrame) -> bytes:
 
         @param df: the dataframe.
     """
-    return b''  # REPLACE THIS WITH YOUR CODE...
+    builder = flatbuffers.Builder(1024)
+    int_col_list = list()
+    float_col_list = list()
+    str_col_list = list()
 
+    for c_name in reversed(df.columns):
+        if df[c_name].dtype == "int64":
+            datatype = DataType.DataType().INT64
+            IntData.IntDataStartDataVector(builder, len(df[c_name]))
+            for v in reversed(df[c_name]):
+                builder.PrependInt64(v)
+            datas = builder.EndVector()
+            IntData.Start(builder)
+            IntData.AddData(builder, datas)
+            c_data = IntData.End(builder)
+
+            c_name = builder.CreateString(c_name)
+
+            ColMetaData.Start(builder)
+            ColMetaData.AddName(builder, c_name)
+            ColMetaData.AddType(builder, datatype)
+            c_metadata = ColMetaData.End(builder)
+
+            Column.Start(builder)
+            Column.AddColmetadata(builder, c_metadata)
+            Column.AddData(builder, c_data)
+            int_col_list.append(Column.End(builder))
+        elif df[c_name].dtype == "float64":
+            datatype = DataType.DataType().FLOAT64
+            FloatData.FloatDataStartDataVector(builder, len(df[c_name]))
+            for v in reversed(df[c_name]):
+                builder.PrependFloat64(v)
+            datas = builder.EndVector()
+            FloatData.Start(builder)
+            FloatData.AddData(builder, datas)
+            c_data = FloatData.End(builder)
+
+            c_name = builder.CreateString(c_name)
+
+            ColMetaData.Start(builder)
+            ColMetaData.AddName(builder, c_name)
+            ColMetaData.AddType(builder, datatype)
+            c_metadata = ColMetaData.End(builder)
+
+            Column.Start(builder)
+            Column.AddColmetadata(builder, c_metadata)
+            Column.AddData(builder, c_data)
+            float_col_list.append(Column.End(builder))
+        else:
+            datatype = DataType.DataType().STRING
+            str_offsets = list()
+            for v in reversed(df[c_name]):
+                str_offsets.append(builder.CreateString(v))
+            StringData.StringDataStartDataVector(builder, len(str_offsets))
+            for offset in str_offsets:
+                builder.PrependUOffsetTRelative(offset)
+            datas = builder.EndVector()
+            StringData.Start(builder)
+            StringData.AddData(builder, datas)
+            c_data = StringData.End(builder)
+
+            c_name = builder.CreateString(c_name)
+
+            ColMetaData.Start(builder)
+            ColMetaData.AddName(builder, c_name)
+            ColMetaData.AddType(builder, datatype)
+            c_metadata = ColMetaData.End(builder)
+
+            Column.Start(builder)
+            Column.AddColmetadata(builder, c_metadata)
+            Column.AddData(builder, c_data)
+            str_col_list.append(Column.End(builder))
+
+    col_list = int_col_list + float_col_list + str_col_list
+
+    DataFrame.DataFrameStartColumnsVector(builder, len(col_list))
+    for col in col_list:
+        # print(col)
+        builder.PrependUOffsetTRelative(col)
+    columns = builder.EndVector(len(col_list))
+
+    DataFrame.DataFrameStart(builder)
+    DataFrame.AddColumns(builder, columns)
+    dataframe = DataFrame.DataFrameEnd(builder)
+
+    builder.Finish(dataframe)
+
+
+    return builder.Output()  # REPLACE THIS WITH YOUR CODE...
 
 def fb_dataframe_head(fb_bytes: bytes, rows: int = 5) -> pd.DataFrame:
     """
